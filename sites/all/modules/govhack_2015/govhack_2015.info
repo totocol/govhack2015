@@ -1,0 +1,5 @@
+name = GovHack 2015 Database Interface
+description = Creates blocks out of the data collected for GovHack 2015.
+package = GovHack
+version = 7.x-1.0
+core = 7.x

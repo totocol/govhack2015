@@ -35,3 +35,28 @@ function enviro_preprocess_page(&$variables) {
     $variables['copyright'] = check_markup($copyright['value'], $copyright['format']);
   }
 }
+
+
+function enviro_preprocess_block(&$vars){
+  /* Set shortcut variables. Hooray for less typing! */
+  $block_id = $vars['block']->module . '-' . $vars['block']->delta;
+  $classes = &$vars['classes_array'];
+  //$title_classes = &$vars['title_attributes_array']['class'];
+  //$content_classes = &$vars['content_attributes_array']['class'];
+ 
+  /* Add classes based on the block delta. */
+  if ($vars['block']->module == 'govhack_2015'){
+    switch ($block_id) {
+      /* System Navigation block */
+      case 'govhack_2015-get_postcode':
+        $classes[] = 'get-postcode';
+        break;
+      case 'govhack_2015-chosen_lga':
+        $classes[] = 'chosen-lga';
+        break;
+      default :
+        $classes[] = 'metric';
+        break;
+    }
+  }
+}

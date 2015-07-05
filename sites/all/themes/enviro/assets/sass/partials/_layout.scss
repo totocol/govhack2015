@@ -1,2 +1,43 @@
-// Styles for main layout
-// --------------------------------------------------
+.not-front{
+  #main-wrapper{
+  background: linear-gradient(45deg, lighten(#92baac, 8%) 45px, transparent 45px)64px 64px,
+              linear-gradient(45deg, lighten(#92baac,8%) 45px, transparent 45px,transparent 91px, #e1ebbd 91px, #e1ebbd 135px, transparent 135px),
+              linear-gradient(-45deg, lighten(#92baac, 8%) 23px, transparent 23px, transparent 68px,lighten(#92baac, 8%) 68px,lighten(#92baac, 8%) 113px,transparent 113px,transparent 158px,lighten(#92baac, 8%) 158px);
+  background-color:#e1ebbd;
+  background-size: 128px 128px;
+  padding-bottom: $grid-gutter-width;
+  }
+
+.nav{
+  text-align: center;
+  background: $green;
+  img{
+    margin: 0 auto;
+    display: block;
+    width: 400px;
+    max-width: 100%;
+    
+  }
+  h1{
+    display: inline-block;
+    color: #fff;
+  }
+
+  a{
+    display: block;
+    width: 100%;
+    height: 150px;
+    color: #fff;
+  }
+}
+
+footer{
+  background: #000;
+  padding: $grid-gutter-width;
+  margin: 0!important;
+  color: #fff;
+}
+#first-time{
+  display: none;
+}
+}

@@ -1,2 +1,97 @@
 // Styles for individual pages
 // --------------------------------------------------
+body.front{
+  		background-image: image-url('care-home-mobile.jpg');
+		  background-position: 50% 50%;
+  		background-repeat: no-repeat;
+  		background-size: cover;
+  		height: 100vh;
+
+		
+  		@media (min-width: $screen-sm) { 
+  			background-image: image-url('care-home-desktop.jpg');
+			background-position: 50% 50%;
+	  		background-repeat: no-repeat;
+	  		background-size: cover;
+	  		height: 100vh;
+
+  		}
+
+  		h2.splash{
+  			color: #fff;
+  			font-size: 21px;
+  			padding: 0 $grid-gutter-width;
+  			text-align: center;
+  		}
+
+  		form h3{
+  			display: none;
+  		}
+
+  		form{
+  			padding: $grid-gutter-width;
+  			max-width: 600px;
+  			margin: 0 auto;
+  			text-align: center;
+
+  			label{
+  				display: none;
+  			}
+
+  			input{
+  				padding-top: $grid-gutter-width;
+  				padding-bottom: $grid-gutter-width;
+  			}
+
+  			.form-submit {
+  				background: $orange;
+  				color: #000;
+  				font-family: $font-family-serif;
+  				font-size: 2em;
+  				padding: 0.5em;
+  				margin: 1em auto;
+  				border: darken($orange, 10%);
+
+  				&:hover, &:focus{
+  					background: darken($orange, 10%);
+  				}
+  			}
+
+  		}
+
+  		.navbar-brand {
+  			display: block;
+  			height: auto;
+  			width: 100%;
+  			clear: both;
+  			img{
+  				display: block;
+  				margin: 0 auto;
+  			}
+  		}
+
+  		
+  		#open-search{
+  			display: none;
+  		}
+
+  		#footer{
+  			position: absolute;
+			  width: 100%;
+			  bottom: 0;
+        margin: $grid-gutter-width/2 0;
+  		}
+
+  		.to-top{
+  			display: none;
+  		}
+
+  		.copyright{
+  			color: #fff;
+  			a{
+  				color: $orange;
+  			}
+  		}
+}
+
+

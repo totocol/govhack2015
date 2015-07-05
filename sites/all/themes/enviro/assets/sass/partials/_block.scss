@@ -1,2 +1,423 @@
 // Styles for blocks.
 // --------------------------------------------------
+.not-front{
+	.block-govhack-2015{
+	position: relative;
+	padding: $grid-gutter-width/2 $grid-gutter-width;
+
+	h2{
+		font-size: 1.5em;
+		margin: 12px 0 12px 0;
+	}
+
+	.metric-descriptor, .metric-statement{
+		padding: 16px 0;
+		margin: 0;
+	}
+
+	.data-tooltip{
+		display: none;
+		white-space: nowrap;
+		z-index: 100;
+	}
+
+	.tooltip-lga-title{
+		font-weight: 600;
+	}
+
+	.active .data-tooltip{
+		position: absolute;
+		bottom: 20px;
+		background: $brand-primary;
+		border-radius: 10px;
+		padding: $grid-gutter-width/4;
+		display: block;
+		border: 2px solid #f0f0f0;
+		font-size: 12px;
+	}
+	.data{
+		@include flexbox();
+  		flex-wrap: nowrap;
+  		margin-top: $grid-gutter-width;
+  		position: relative;
+  		border-radius: 5px;
+		/* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#49c427+0,b26060+100 */
+		background: rgb(73,196,39); /* Old browsers */
+		background: -moz-linear-gradient(left,  rgba(73,196,39,1) 0%, rgba(178,96,96,1) 100%); /* FF3.6+ */
+		background: -webkit-gradient(linear, left top, right top, color-stop(0%,rgba(73,196,39,1)), color-stop(100%,rgba(178,96,96,1))); /* Chrome,Safari4+ */
+		background: -webkit-linear-gradient(left,  rgba(73,196,39,1) 0%,rgba(178,96,96,1) 100%); /* Chrome10+,Safari5.1+ */
+		background: -o-linear-gradient(left,  rgba(73,196,39,1) 0%,rgba(178,96,96,1) 100%); /* Opera 11.10+ */
+		background: -ms-linear-gradient(left,  rgba(73,196,39,1) 0%,rgba(178,96,96,1) 100%); /* IE10+ */
+		background: linear-gradient(to right,  rgba(73,196,39,1) 0%,rgba(178,96,96,1) 100%); /* W3C */
+		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#49c427', endColorstr='#b26060',GradientType=1 ); /* IE6-9 */
+		&:before{
+			@include fontawesome('\f087');
+			position: absolute;
+			bottom: 0;
+			left: -20px;
+			display: inline-block;
+
+		}
+
+		&:after{
+			 @include fontawesome('\f088');
+			 position: absolute;
+			 bottom: 0;
+			 right: -20px;
+			 display: inline-block;
+
+		}
+
+	div.lga{
+		.data-tooltip{
+			opacity: 1;
+		}
+
+		&.placeholder{
+			font-size: 20px;
+			line-height: 20px;
+			color: #444;
+			text-align: center;
+			white-space: nowrap;
+  		}
+
+		&:first-child{
+			border-radius: 5px 0 0 5px;
+			background-color: #27ae60;
+			position: relative;
+			// &:before{
+			// 	@include fontawesome('\f087');
+			// 	position: absolute;
+			// 	bottom: 0;
+			// 	left: -20px;
+			// 	display: inline-block;
+			// }
+		}
+
+		&:last-child{
+			border-radius: 0px 5px 5px 0;
+			background-color: rgba(231, 76, 60,0.5);
+			position: relative;
+		}
+
+		&.active{
+			background: rgba(39, 174, 96,1.0);
+		}
+
+		&.chosen{
+			background: lighten(#f1c40f, 10%);
+			position:relative;
+			text-align: center;
+			@include single-box-shadow(0, 0, 1px, 1px, rgba(255, 255, 255, 0.5));
+
+			&:before{
+					@include fontawesome('\f21e');
+					display: block;
+					position: absolute;
+					bottom: 20px;
+					left: 0;
+					color: #d45001;
+					font-size: 18px;
+					padding: 0;
+					padding-left: 3px;
+			}
+
+			&:hover, &:focus{
+				background: #f1c40f;
+			}
+
+			.data-tooltip{
+				background: #f1c40f;
+			}
+		}
+
+		//background-color: rgba(41, 128, 185,0.5);
+		height: 20px;
+		width: 100%;
+		border-left: 1px solid #f0f0f0;
+		cursor: pointer;
+		&:hover, &:active, &:focus {
+			background: rgba(39, 174, 96,1.0);
+			}
+		}
+	}
+
+}
+
+.lga{
+	display: none;
+	&.lga.top-5, &.lga.bottom-5, &.active, &.chosen, &.placeholder.five {
+		display: block;
+	}
+
+	&:first-child, &:last-child{
+		@include flex( 1 100%);
+	}
+	&.active, &.chosen{
+		@include flex( 1 100%);
+	}
+	&.placeholder{
+		background: #f0f0f0 !important;
+	}
+
+}
+
+
+
+@media (min-width: $screen-sm) { 
+		.lga{
+			display: none;
+			&.lga.top-10, &.lga.bottom-10, &.active, &.chosen, &.placeholder.ten {
+				display: block;
+			}
+			&.placeholder.five{
+				display: none;
+			}
+
+			&:first-child, &:last-child{
+				@include flex( 1 200%);
+			}
+			&.active, &.chosen{
+				@include flex( 1 200%);
+			}
+			&.placeholder{
+				background-color: #f0f0f0 !important;
+			
+			}
+		}
+
+	 }
+
+
+@media (min-width: $screen-md) { 
+		.lga{
+			display: block;
+			&.placeholder.ten, &.placeholder.five {
+				display: none;
+			}
+			&:first-child, &:last-child{
+				@include flex( 1 500%);
+			}
+			&.active, &.chosen{
+				@include flex( 1 500%);
+			}
+		}
+
+	 }
+
+}
+
+
+.not-front{
+
+	.metric{
+		background: #ecf0f1;
+		max-width: 1024px;
+		margin: 0 auto;
+		width: 90%;
+	}
+
+	.get-postcode{
+  background: lighten(#000, 10%);
+  margin: 0;
+  padding: 0;
+
+  max-width: 100%;
+  //max-height: 0;
+  overflow: hidden;
+  display: none;
+  @include single-box-shadow(0, 1px, 1px, 1px, rgba($grey, 0.2), false);
+  .content{
+    max-width: 600px;
+    margin: 0 auto;
+    padding: $grid-gutter-width;
+  }
+
+  h3{
+  	color: #f0f0f0;
+  	font-size: 18px;
+  }
+  label{
+  	display: none;
+  }
+}
+
+#open-search{
+	display: inline-block;
+	background: lighten(#000, 10%);
+	color: #f0f0f0;
+	font-weight: 600;
+	padding: $grid-gutter-width/3;
+	border-radius: 0 0px 5px 5px;
+	margin: 0 $grid-gutter-width/2 $grid-gutter-width/2 $grid-gutter-width;
+	cursor: pointer;
+}
+
+
+
+#block-govhack-2015-chosen-lga.block-govhack-2015{
+	background: $grey;  /* margin: 30px auto; */
+  	max-width: 10240px;
+  	padding: 30px;
+  	color: #fff;
+  	text-align: center;
+  	width: 100%;
+  	margin: 0;
+
+  	.lga-name, .state-value{
+  		font-weight: 700;
+  		margin-bottom: 1em;
+  	}
+
+  	.lga-name{
+  		font-size: 1.7em;
+  	}
+
+  	.state-value{
+  		font-size: 1.3em;
+
+  	}
+
+  	.lga-instructions{
+  		padding-top: 12px;
+  		color: $milk;
+  	}
+}
+
+.block-webform{
+	background: $grey;
+	margin: $grid-gutter-width auto;
+	max-width: 1024px;
+	width: 90%;
+	padding: $grid-gutter-width;
+	border-radius: 3px;
+	border-color: #444;
+	label, .description{
+		color: #fff;
+	}
+	h2{
+		display: none;
+	}
+
+	label[for="edit-submitted-my-care-factors"]{
+		font-size: 2em;
+		margin-bottom: 1em;
+	}
+}
+
+
+
+#block-socbutt-horizontal{
+	margin: $grid-gutter-width auto;
+	max-width: 1024px;
+	width: 90%;
+	text-align: center;
+	a{
+		background: $grey;
+		border-color: #444;
+		&:hover, &:focus{
+			background: darken($grey, 10%);
+		}
+	}
+}
+
+
+.metric{
+	@media (min-width: $screen-sm) { 
+	text-align: left;
+	}
+
+	text-align: center;
+
+	h2{
+		text-align: center;
+		text-transform: uppercase;
+		@media (min-width: $screen-sm) { 
+			text-align: left;
+			}
+
+		&:after{
+		color: $orange;
+		font-size: 1.5em;
+		display: block;
+		text-align: center;
+		clear: both;
+		padding: 12px 0 ;
+		font-size: 2em;
+
+		@media (min-width: $screen-sm) { 
+			display: inline-block;
+			font-size: 1em;
+			}
+		}
+		
+	}
+}
+
+#block-govhack-2015-air-con h2{
+
+	&:after{
+		@include fontawesome('\f185');
+		}
+
+	}
+
+
+#block-govhack-2015-electricity-consumption h2{
+	&:after{
+		@include fontawesome('\f0eb');
+		}
+	}
+
+
+#block-govhack-2015-population h2{
+	&:after{
+		@include fontawesome('\f183');
+		}
+	}
+
+
+#block-govhack-2015-average-income h2{
+	&:after{
+		@include fontawesome('\f155');
+		}
+	}
+
+#block-govhack-2015-waste-produced h2{
+	&:after{
+		@include fontawesome('\f014');
+		}
+	}
+
+#block-govhack-2015-waste-recycled h2{
+	&:after{
+		@include fontawesome('\f1b8');
+		}
+	}
+
+
+#block-govhack-2015-vehicle-pollution h2{
+	&:after{
+		@include fontawesome('\f1b9');
+		}
+	}
+
+#block-govhack-2015-respiratory-illness-deaths h2{
+	&:after{
+		@include fontawesome('\f0fa');
+		}
+	}
+
+#block-govhack-2015-water-use h2{
+	&:after{
+		@include fontawesome('\f043');
+		}
+	}
+
+}
+
+
+
+
+
+

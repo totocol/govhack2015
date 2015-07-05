@@ -1,0 +1,611 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ */
+function govhack_2015_menu(){
+  // path with autocomplete function for cities
+  $items['postcode/autocomplete'] = array(
+    'title' => 'Autocomplete for PostCodes',
+    'page callback' => '_govhack_2015_postcode_autocomplete',
+    'access arguments' => array('use autocomplete'),  //or whatever permission makes sense
+    'type' => MENU_CALLBACK
+  );
+  return $items;
+}
+
+/**
+* Implements hook_block_info().
+*/
+function govhack_2015_block_info() {
+    $blocks = array();
+    $blocks['get_postcode'] = array(
+        'info' => t('GovHack Postcode form'),
+    );
+    $blocks['chosen_lga'] = array(
+        'info' => t('Displays the chosen lga'),
+    );
+    $blocks['air_con'] = array(
+        'info' => t('Total air conditioning hours per a/c unit'),
+    );
+    $blocks['electricity_consumption'] = array(
+        'info' => t('Electricity consumption'),
+    );
+    $blocks['population'] = array(
+        'info' => t('Population'),
+    );
+    $blocks['water_use'] = array(
+        'info' => t('Water use'),
+    );
+    $blocks['average_income'] = array(
+        'info' => t('Average income'),
+    );
+    $blocks['waste_produced'] = array(
+        'info' => t('Waste produced'),
+    );
+    $blocks['waste_recycled'] = array(
+        'info' => t('Waste recycled'),
+    );
+    $blocks['vehicle_pollution'] = array(
+        'info' => t('Vehicle pollution'),
+    );
+    $blocks['respiratory_illness_deaths'] = array(
+        'info' => t('Respiratory illness deaths'),
+    );
+    return $blocks;
+}
+
+
+/**
+* Implements hook_block_view().
+*/
+function govhack_2015_block_view($delta = '') {
+  $block = array();
+    // Get the user-submitted LGA name
+    $postcode =  isset(drupal_get_query_parameters()['postcode']) ? drupal_get_query_parameters()['postcode']: '';
+    if (isset($postcode) and !empty($postcode)) {
+        $mylga = govhack_2015_postcode_to_lga($postcode);
+    } else {
+        //test dont put this on prod .!
+        $mylga = 'Boorowa (A)';
+    }
+
+  switch ($delta) {
+  case 'get_postcode':
+    $block['subject'] = '';
+    $block['content'] = govhack_2015_get_postcode_content();
+    break;
+  case 'chosen_lga':
+    $block['subject'] = '';
+    $block['content'] = govhack_2015_chosen_lga_content();
+      break;
+  case 'air_con':
+    $table = 'govhack_master_data';
+    $columnNames = array('lga_id_master', 'lga_name', 'air_con_total');
+    $tableAlias = 'g';
+    $orderBy ='air_con_total';
+    $order = 'ASC';
+    $block['subject'] = t('AIR CONDITIONING');
+    $db_query = _govhack_2015_db_query_result($table, $tableAlias, $columnNames, $orderBy, $order);
+    $values = _govhack_2015_get_factor_value(array('air_con_heating','air_con_cooling', 'air_con_total'), $mylga);
+    $desc = 'Cold winters and hot summers make us rely on climate control. Air conditioners chew through electricity (still mostly coal based).';
+    $block['content'] = array(
+      'descriptor' => govhack_2015_output_descriptor($desc),
+      'slider' => array('#markup' => _govhack_2015_content_output($db_query)),
+      'value-statement' => govhack_2015_output_vs_air_con($values),
+    );
+    break;
+  case 'electricity_consumption':
+    $table = 'govhack_master_data';
+    $columnNames = array('lga_id_master', 'lga_name', 'lga_consumption_customer_day_kwh');
+    $tableAlias = 'g';
+    $orderBy ='lga_consumption_customer_day_kwh';
+    $order = 'ASC';
+    $block['subject'] = 'ENERGY';
+    $db_query = _govhack_2015_db_query_result($table, $tableAlias, $columnNames, $orderBy, $order);
+    $values = _govhack_2015_get_factor_value(array('lga_consumption_customer_day_kwh'), $mylga);
+    $desc = 'We need energy for nearly everything we do. But most of it is still coal-based, which creates greenhouse emissions.';
+    $block['content'] = array(
+      'descriptor' => govhack_2015_output_descriptor($desc),
+      'slider' => array('#markup' => _govhack_2015_content_output($db_query)),
+      'value-statement' => govhack_2015_output_vs_electricity_consumption($values),
+    );
+    break;
+  case 'population':
+    $table = 'govhack_master_data';
+    $columnNames = array('lga_id_master', 'lga_name', 'population_lga_2011', 'population_lga_2031');
+    $tableAlias = 'g';
+    $orderBy ='population_lga_2011';
+    $order = 'DESC';
+    $block['subject'] = t('POPULATION');
+    $db_query = _govhack_2015_db_query_result($table, $tableAlias, $columnNames, $orderBy, $order);
+    $values = _govhack_2015_get_factor_value(array('population_lga_2011', 'population_lga_2031'), $mylga);
+    $desc = 'As we grow, we need to be more mindful of how much we use. Our community can be our strength. This is how many people we can kick into action!';
+    $block['content'] = array(
+      'descriptor' =>  govhack_2015_output_descriptor($desc),
+      'slider' => array('#markup' => _govhack_2015_content_output($db_query)),
+      'value-statement' => govhack_2015_output_vs_population($values),
+    );
+    break;
+  case 'water_use':
+    $table = 'govhack_master_data';
+    $columnNames = array('lga_id_master', 'lga_name', 'water_litres_person_year_2011');
+    $tableAlias = 'g';
+    $orderBy ='water_litres_person_year_2011';
+    $order = 'ASC';
+    $block['subject'] = t('WATER');
+    $db_query = _govhack_2015_db_query_result($table, $tableAlias, $columnNames, $orderBy, $order);
+     $values = _govhack_2015_get_factor_value(array('water_litres_person_year_2011', 'water_consumption_kilolitres'), $mylga);
+    $desc = 'On average, each Aussie uses X litres per day for household use. We\'re getting good at reducing this over time.  ';
+    $block['content'] = array(
+      'descriptor' => govhack_2015_output_descriptor($desc),
+      'slider' => array('#markup' => _govhack_2015_content_output($db_query)),
+      'value-statement' => govhack_2015_output_vs_water_use($values),
+    );
+    break;
+  case 'average_income':
+    $table = 'govhack_master_data';
+    $columnNames = array('lga_id_master', 'lga_name', 'income_per_capita');
+    $tableAlias = 'g';
+    $orderBy ='income_per_capita';
+    $order = 'DESC';
+    $block['subject'] = t('WEALTH');
+    $db_query = _govhack_2015_db_query_result($table, $tableAlias, $columnNames, $orderBy, $order);
+    $desc = 'Income can dictate lifestyle choices, and every bit counts. It\'s always good to be aware of what we can commit to.';
+     $values = _govhack_2015_get_factor_value(array('income_per_capita'), $mylga);
+    $block['content'] = array(
+      'descriptor' => govhack_2015_output_descriptor($desc),
+      'slider' => array('#markup' => _govhack_2015_content_output($db_query)),
+      'value-statement' => govhack_2015_output_vs_average_income($values),
+    );
+    break;
+  case 'waste_produced':
+    $table = 'govhack_master_data';
+    $columnNames = array('lga_id_master', 'lga_name', 'waste_produced_person');
+    $tableAlias = 'g';
+    $orderBy ='waste_produced_person';
+    $order = 'ASC';
+    $block['subject'] = t('GARBAGE');
+    $db_query = _govhack_2015_db_query_result($table, $tableAlias, $columnNames, $orderBy, $order);
+    $desc = 'We are one of the world\'s largest waste producers, with everyone creating 2.25kg of waste every day';
+      $values = _govhack_2015_get_factor_value(array('waste_produced_person'), $mylga);
+    $block['content'] = array(
+      'descriptor' => govhack_2015_output_descriptor($desc),
+      'slider' => array('#markup' => _govhack_2015_content_output($db_query)),
+      'value-statement' => govhack_2015_output_vs_waste_produced($values),
+    );
+    break;
+  case 'waste_recycled':
+    $table = 'govhack_master_data';
+    $columnNames = array('lga_id_master', 'lga_name', 'percent_waste_recycled');
+    $tableAlias = 'g';
+    $orderBy ='percent_waste_recycled';
+    $order = 'DESC';
+    $block['subject'] = t('RECYCLING');
+    $db_query = _govhack_2015_db_query_result($table, $tableAlias, $columnNames, $orderBy, $order);
+    $values = _govhack_2015_get_factor_value(array('percent_waste_recycled'), $mylga);
+    $desc = 'We do recycle a lot, but we waste a lot as well from overconsumption in the first place.';
+    $block['content'] = array(
+      'descriptor' => govhack_2015_output_descriptor($desc),
+      'slider' => array('#markup' => _govhack_2015_content_output($db_query)),
+      'value-statement' => govhack_2015_output_vs_waste_recycled($values),
+    );
+    break;
+  case 'vehicle_pollution':
+    $table = 'govhack_master_data';
+    $columnNames = array('lga_id_master', 'lga_name', 'pollution_car_petrol');
+    $tableAlias = 'g';
+    $orderBy ='pollution_car_petrol';
+    $order = 'ASC';
+    $block['subject'] = t('AIR POLLUTANTS');
+    $db_query = _govhack_2015_db_query_result($table, $tableAlias, $columnNames, $orderBy, $order);
+    $values = _govhack_2015_get_factor_value(array('pollution_car_petrol'), $mylga);
+    $desc = '80% of our air pollution comes from traffic emissions. ';
+    $block['content'] = array(
+      'descriptor' => govhack_2015_output_descriptor($desc),
+      'slider' => array('#markup' => _govhack_2015_content_output($db_query)),
+      'value-statement' => govhack_2015_output_vs_vehicle_pollution($values),
+    );
+    break;
+  case 'respiratory_illness_deaths':
+    $table = 'govhack_master_data';
+    $columnNames = array('lga_id_master', 'lga_name', 'respiratory_deaths_100k');
+    $tableAlias = 'g';
+    $orderBy ='respiratory_deaths_100k';
+    $order = 'ASC';
+    $block['subject'] = t('RESPIRATORY ILLNESS');
+    $db_query = _govhack_2015_db_query_result($table, $tableAlias, $columnNames, $orderBy, $order);
+    $block['content'] = array(
+      'descriptor' => govhack_2015_output_descriptor(),
+      'slider' => array('#markup' => _govhack_2015_content_output($db_query)),
+      'value-statement' => govhack_2015_output_vs_respiratory_illness_deaths(array()),
+    );
+    break;
+  }
+  return $block;
+}
+
+function govhack_2015_output_descriptor($des = 'Placeholder') {
+    return array('#markup' => "<div class='metric-descriptor'>$des</div>");
+}
+
+function govhack_2015_output_vs_air_con($value = null) {
+  if ($value) {
+      return array('#markup' => '<div class="metric-statement">The air conditioners in your area run an average of ' .$value->air_con_total. ' hours each year. '.
+                                 $value->air_con_heating. ' hours for heating, ' .$value->air_con_cooling .' hours for cooling</div>');
+  } else {
+      return array('#markup' => '<div class="metric-statement">The air conditioners in your area run an average of 0 hours each year. (0 hours for heating, 0 hours for cooling</div>');
+
+  }
+}
+
+function govhack_2015_output_vs_electricity_consumption($value = null) {
+    if ($value) {
+        return array('#markup' => '<div class="metric-statement">On average, each household uses ' .$value->lga_consumption_customer_day_kwh .' kilowatts per hour each day. </div>');
+    } else {
+        return array('#markup' => '<div class="metric-statement">On average, each household uses 0 kilowatts per hour each day. </div>');
+
+    }
+}
+
+function govhack_2015_output_vs_population($value = null) {
+    if ($value) {
+        $incordec = ' to increase';
+        if ($value->population_lga_2011 > $value->population_lga_2031) {
+            $incordec = ' to decrease';
+        } else if ($value->population_lga_2011 == $value->population_lga_2031) {
+            $incordec = ' to be same';
+        }
+        return array('#markup' => '<div class="metric-statement">You are part of ' .$value->population_lga_2011 . ' people in your area. This is likely '. $incordec .' to '. $value->population_lga_2031 .' by 2031. </div>');
+    } else {
+        return array('#markup' => '<div class="metric-statement">You are part of 0 people in your area. This is likely to decrease] to 0 by 2031. </div>');
+
+    }
+}
+
+function govhack_2015_output_vs_average_income($value = array()) {
+    if ($value) {
+        return array('#markup' => '<div class="metric-statement">  The average income per person in your area is '.$value->income_per_capita .' $AUD a year </div>');
+    } else {
+        return array('#markup' => '<div class="metric-statement">  The average income per person in your area is $AUD 0 a year </div>');
+
+    }
+}
+
+function govhack_2015_output_vs_water_use($value = null) {
+    if ($value) {
+        $daily_water_usage = $value->water_litres_person_year_2011 / 365;
+        return array('#markup' => '<div class="metric-statement"> Every year, each person in your area uses around ' .$daily_water_usage .' litres per day.  </div>');
+    } else {
+        return array('#markup' => '<div class="metric-statement"> Every year, each person in your area uses around 0 litres per day.  </div>');
+    }
+}
+
+function govhack_2015_output_vs_waste_produced($value = null ) {
+    if ($value) {
+        $daily_produced_waste = $value->waste_produced_person /365;
+        return array('#markup' => '<div class="metric-statement">The average person in your area throws out ' .$daily_produced_waste. ' kilograms of waste every day. </div>');
+    } else {
+        return array('#markup' => '<div class="metric-statement"> The average person in your area throws out 0 kilograms of waste every day.</div>');
+
+    }
+}
+
+function govhack_2015_output_vs_waste_recycled($value = null) {
+    if ($value) {
+        return array('#markup' => '<div class="metric-statement"> Of that waste, '.$value->percent_waste_recycled . ' percent gets recycled.</div>');
+    } else {
+        return array('#markup' => '<div class="metric-statement"> Of that waste, 0 percent gets recycled.</div>');
+    }
+}
+
+function govhack_2015_output_vs_vehicle_pollution($value = null) {
+    if ($value) {
+       return array('#markup' => '<div class="metric-statement">The petrol cars through your area create ' .$value->pollution_car_petrol .' kilograms of pollutants in your air each day.</div>');
+    } else {
+        return array('#markup' => '<div class="metric-statement">The petrol cars through your area create 0 kilograms of pollutants in your air each day.</div>');
+    }
+}
+
+function govhack_2015_output_vs_respiratory_illness_deaths($value = array()) {
+  return array('#markup' => '<div class="metric-statement">You are part of [population_lga_2011] people in your area. This is likely to [increase/decrease] to [population_lga_2031] by 2031. </div>');
+}
+
+
+
+function govhack_2015_get_postcode_content(){
+  return drupal_get_form('govhack_2015_get_postcode_form');
+}
+
+/**
+ * Build the form to request postcode or LGA from user
+ */
+function govhack_2015_get_postcode_form($form, &$form_state){
+  $form['title']['#markup'] = '<h3>my postcode (NSW for now, then the WORLD!)</h3>';
+  $form['postcode'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Postcode'),
+    '#default_value' => '', 
+    '#size' => 20, 
+    '#maxlength' => 25,
+    '#required' => TRUE,
+    //'#autocomplete_path' => 'postcode/autocomplete',
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Go'),
+  );
+  return $form;
+}
+
+/**
+ * Submit handler to put query on URL
+ */
+function govhack_2015_get_postcode_form_submit($form_id, &$form_state){
+  $postcode = $form_state['values']['postcode'];
+  $options['query']['postcode'] = $postcode;
+  drupal_goto($path = 'factors', $options);
+}
+
+/**
+ * Validation handler
+ */
+function govhack_2015_get_postcode_form_validate($form_id, &$form_state){
+  $matches = array();
+  $valueexists = FALSE;
+
+  $postcode = $form_state['values']['postcode'];
+
+  if (!govhack_2015_postcode_exists($postcode)){
+    form_set_error('postcode', 'We looked and we couldn’t find that, sorry.<br>We’re only using NSW postcodes for now. Try again?');
+  }
+}
+
+/**
+ * autocomplete helper
+ * $string = string for search
+ */
+function _govhack_2015_postcode_autocomplete($string) {
+  $matches = array();
+
+  // Only start autocomplete once two or more characters are entered
+  if (strlen($string) > 1){
+
+    // Grab the results
+    $result = db_select('govhack_lga_names', 'g')
+      ->fields('g', array('postcode'))
+      ->condition('postcode', '%' . db_like($string) . '%', 'LIKE')
+      ->execute();
+
+    // save the query to matches
+    while($record = $result->fetchAssoc()) {
+      $matches[$record['postcode']] = check_plain($record['postcode']);
+    }  
+
+    // Return the result to the form in json
+  }
+
+  drupal_json_output($matches);
+}
+
+/**
+ * Content for chosen lga block
+ */
+function govhack_2015_chosen_lga_content(){
+  $query = drupal_get_query_parameters();
+  if(array_key_exists('postcode', $query)){
+    $postcode = $query['postcode'];
+    $lga = govhack_2015_postcode_to_lga($postcode);
+
+    $totalquery = db_select('govhack_master_data', 'g')
+      ->fields('g')
+      ->execute();
+    $total = $totalquery->rowCount();
+
+    $factors = array(
+      'air_con_total',
+      'lga_consumption_customer_day_kwh',
+      'population_lga_2011',
+      'water_litres_person_year_2011',
+      'income_per_capita',
+      'waste_produced_person',
+      'percent_waste_recycled',
+      'pollution_car_petrol',
+      'respiratory_deaths_100k',
+    );
+
+    $factorscores = _govhack_2015_get_factor_value($factors, $lga);
+    $factordirection = array();
+    foreach($factors as $factor){
+      if ($factor == 'percent_waste_recycled'){
+        $factordirection[$factor] = '>=';
+      } else {
+        $factordirection[$factor] = '<=';
+      }
+    }
+    foreach ($factorscores as $factor => $factorscore){
+      $factorrank[$factor] = _govhack_2015_factor_rank($factor, $factorscore, $factordirection[$factor]);
+      $factorrank[$factor] = $factorrank[$factor] / $total;
+    }
+    $avgrank = array_sum($factorrank) / count($factorrank);
+
+    switch ($avgrank){
+    case $avgrank > 0.8:
+      $state = 'NOT GOOD';
+      $statedescription = 'Ok, we lied, it\'s kind of DIRE. As a community you all could do waaaaay better overall.';
+      break;
+    case $avgrank > 0.6:
+      $state = 'MEH';
+      $statedescription = 'You\'re holding back, we can tell. There\'s a lot of untapped potential.';
+      break;
+    case $avgrank > 0.4:
+      $state = 'GETTING THERE';
+      $statedescription = 'The good news is that you\'re doing better than over half of NSW, and we bet you\'re the competitive type. Keep at it!';
+      break;
+    case $avgrank > 0.2:
+      $state = 'IMPRESSIVE';
+      $statedescription = 'The overall effort you are making is evident, well done! We bet you don\'t like being second best though.';
+      break;
+    default:
+      $state = 'LEGENDS';
+      $statedescription = 'You\'re performing well above the pack, we could all learn from you.';
+      break;
+    }
+
+    $cleanlga = govhack_2015_clean_lga_name($lga);
+
+    $output  = '<label class="lga-label">Your community:</label>';
+    $output .= '<div class="lga-name">' . $cleanlga . '</div>';
+    $output .= '<label class="state-label">Overall state:</label>';
+    $output .= '<div class="state-value">' . $state . '</div>';
+    $output .= '<div class="lga-rank-description">' . $statedescription . '</div>';
+    $output .= '<div class="lga-instructions">Slide along the scale to see where you sit against the highest and lowest performing areas in NSW.</div>';
+
+    return $output;
+  }
+}
+
+/**
+ * Helper function to get lga rank in each metric
+ */
+function _govhack_2015_factor_rank($factor, $factorscore, $direction){
+  $result = db_select('govhack_master_data', 'g')
+    ->fields('g')
+    ->condition($factor, $factorscore, $direction)
+    ->execute();
+
+  return $result->rowCount();
+}
+
+
+function _govhack_2015_get_factor_value($factors = array(), $lga){
+  $factorvaluequery = db_select('govhack_master_data', 'g')
+    ->fields('g', $factors)
+    ->condition('lga_name', $lga)
+    ->execute();
+
+  return  $factorvaluequery->fetchAll()[0];
+}
+
+/**
+ * Content for metric blocks
+ */
+function _govhack_2015_db_query_result ($table, $tableAlias = '',
+                                        $columnNames = array(),
+                                        $value = '', $order = 'ASC')
+{
+
+    $result = db_select($table, $tableAlias)
+        ->fields($tableAlias, $columnNames)
+        ->orderBy($value, $order)
+        ->execute();
+
+    return array( 'result' => $result, 'value' => $value);
+}
+
+/**
+ * Content for metric blocks
+ */
+function _govhack_2015_content_output($db_result = array(), $att = array ()) {
+
+    // Get the user-submitted LGA name
+    $postcode =  isset(drupal_get_query_parameters()['postcode']) ? drupal_get_query_parameters()['postcode']: '';
+    if (isset($postcode) and !empty($postcode)) {
+        $mylga = govhack_2015_postcode_to_lga($postcode);
+    } else {
+        //test dont put this on prod .!
+        $mylga = 'Boorowa (A)';
+    }
+    // Get the total number of rows
+    $total = $db_result['result']->rowCount();
+
+    $rank = 1;
+    $output = '<div class="data">';
+    while($record = $db_result['result']->fetchAssoc()) {
+
+        // Check for user-selected LGA
+        $class = '';
+        if(!empty($mylga)) {
+            if($record['lga_name'] == $mylga){
+                $class = ' chosen';
+            }
+        }
+        $record['lga_name'] = govhack_2015_clean_lga_name($record['lga_name']);
+
+        // Round the values to nearest whole number
+        $rounded = round($record[$db_result['value']]);
+
+        // Add classes for top and bottom 1, 5, 10
+        if($rank <= 1){
+            $class .= ' top';
+        }
+        if($rank <= 5){
+            $class .= ' top-5';
+        }
+        if($rank <= 10){
+            $class .= ' top-10';
+        }
+        $bottom = $total - $rank;
+        if($bottom < 1){
+            $class .= ' bottom';
+        }
+        if($bottom < 5){
+            $class .= ' bottom-5';
+        }
+        if($bottom < 10){
+            $class .= ' bottom-10';
+        }
+
+        // Compile the output
+        $output .= '<div class="lga' . $class . '" ';
+        $output .= 'data-lga ="' . $record['lga_name'];
+        $output .= '" data-value ="' . $rounded;
+        $output .= '" data-ranking="' . $rank . '">';
+        $output .= '<div class="data-tooltip"> <div class="tooltip-lga-title">'. $record['lga_name'];
+        $output .= '</div><div> <label> Value:  </label> '. $rounded;
+        $output .= '</div><div> <label> Ranking: </label> '. $rank . ' / ' . $total;
+        /*$raw_score = (1 - ($rank/162)) * 100;
+        $score   =  number_format($raw_score, 2);
+        $output .= '</div><div> <label> Percentile: </label> '. $score;*/
+        $output .= ' </div></div></div>';
+        $rank++;
+    }
+
+    $output .= '</div>';
+
+    return $output;
+}
+
+
+function govhack_2015_postcode_to_lga($postcode){
+  if (count($postcode) < 1){
+    return;
+  }
+
+  $result = db_select('govhack_lga_names', 'g')
+    ->fields('g', array('lga_Name'))
+    ->condition('postcode', $postcode)
+    ->execute();
+
+  if ($record = $result->fetchAssoc()['lga_Name']){
+    return $record;
+  }
+  return;
+}
+
+function govhack_2015_clean_lga_name($lga){
+  $pieces = explode(" (", $lga);
+  return $pieces[0];
+}
+
+function govhack_2015_postcode_exists($postcode){
+  $result = db_select('govhack_lga_names', 'g')
+    ->fields('g', array('postcode'))
+    ->condition('postcode', $postcode)
+    ->groupBy('postcode')
+    ->execute();
+  if ($result->rowCount() == 1){
+    return TRUE;
+  }
+  return FALSE;
+}
